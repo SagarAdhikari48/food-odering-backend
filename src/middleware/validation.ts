@@ -6,20 +6,59 @@ import { Request, Response, NextFunction } from "express";
  * Validates the fields: name, addressLine1, country, and city.
  */
 
-const handleValidationErrors = async(req: Request, res: Response, next: NextFunction) => {
-    const errors = validationResult(req)
-    if(!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    next();
-}
+const handleValidationErrors = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  next();
+};
 
 export const validateMyUserRequest = [
-  body("name").isString().notEmpty().withMessage("Name must be a string"),
+  body("name").notEmpty().withMessage("Name must be a string"),
   body("addressLine1")
-    .isString().notEmpty()
+    .notEmpty()
     .withMessage("Address Line 1 must be a string"),
-  body("country").isString().notEmpty().withMessage("Country must be a string"),
-  body("city").isString().notEmpty().withMessage("City must be a string"),
-  handleValidationErrors
+  body("country").notEmpty().withMessage("Country must be a string"),
+  body("city").notEmpty().withMessage("City must be a string"),
+  handleValidationErrors,
+];
+
+export const validateMyRestaurantRequest = [
+  body("restaurantName")
+    .notEmpty()
+    .withMessage("Restaurant Name must be a string"),
+  body("city").notEmpty().withMessage("City must be a string"),
+  body("country").notEmpty().withMessage("Country must be a string"),
+  body("deliveryPrice")
+    .isFloat()
+    .withMessage("Delivery Price must be a number"),
+  body("estimatedDeliveryTime")
+    .isFloat({min: 0})
+    .withMessage("Estimated Delivery Time must be a number"),
+  body("image").notEmpty().withMessage("Image must be a string"),
+  body("cuisines")
+    .isArray()
+    .withMessage("Cuisines must be an array of strings")
+    // .custom((value) => {
+    //   if (!value.every((item: any) => typeof item === "string")) {
+    //     throw new Error("Cuisines must be an array of strings");
+    //   }
+    //   return true;
+    // }),
+    ,
+  body("menuItems.*.name")
+    .notEmpty()
+    .withMessage("Menu Item Name must be a string"),
+  body("menuItems.*.price")
+    .isFloat({ min: 0 })
+    .withMessage("Menu Item Price must be a number"),
+    //   }
+    //   return true;
+    // }),
+  handleValidationErrors,
 ];
