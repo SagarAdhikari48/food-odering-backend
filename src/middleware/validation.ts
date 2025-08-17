@@ -38,27 +38,50 @@ export const validateMyRestaurantRequest = [
     .isFloat()
     .withMessage("Delivery Price must be a number"),
   body("estimatedDeliveryTime")
-    .isFloat({min: 0})
+    .isFloat({ min: 0 })
     .withMessage("Estimated Delivery Time must be a number"),
-  body("image").notEmpty().withMessage("Image must be a string"),
+  // body("image").notEmpty().withMessage("Image must be a string"),
   body("cuisines")
     .isArray()
-    .withMessage("Cuisines must be an array of strings")
-    // .custom((value) => {
-    //   if (!value.every((item: any) => typeof item === "string")) {
-    //     throw new Error("Cuisines must be an array of strings");
-    //   }
-    //   return true;
-    // }),
-    ,
+    .withMessage("Cuisines must be an array of strings"),
+  // .custom((value) => {
+  //   if (!value.every((item: any) => typeof item === "string")) {
+  //     throw new Error("Cuisines must be an array of strings");
+  //   }
+  //   return true;
+  // }),
   body("menuItems.*.name")
     .notEmpty()
     .withMessage("Menu Item Name must be a string"),
   body("menuItems.*.price")
     .isFloat({ min: 0 })
     .withMessage("Menu Item Price must be a number"),
-    //   }
-    //   return true;
-    // }),
+  //   }
+  //   return true;
+  // }),
   handleValidationErrors,
 ];
+
+export const parseFormDataFields = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  // Parse cuisines from JSON string to array
+  if (req.body.cuisine) {
+    // If only one cuisine, it will be a string, otherwise an array
+    req.body.cuisines = Array.isArray(req.body.cuisine)
+      ? req.body.cuisine
+      : [req.body.cuisine];
+    delete req.body.cuisine;
+  }
+  // Parse menuItems from JSON string to array
+  if (req.body.menuItems) {
+    try {
+      req.body.menuItems = JSON.parse(req.body.menuItems);
+    } catch {
+      req.body.menuItems = [];
+    }
+  }
+  next();
+};
